@@ -469,7 +469,7 @@ include("fbegin.inc");
 				echo("<strong>" . gettext("Packet Capture is running.") . "</strong><br />");
 				if ($stream_to_hostport) {
 					$dash_w = "-w- -U";
-					$pipe   = " | nc " . str_replace(':', ' ', $stream_to_hostport);
+					$pipe   = " | nc -N " . str_replace(':', ' ', $stream_to_hostport);
 				} else {
 					$dash_w = "-w {$fp}{$fn}";
 					$pipe   = "";
