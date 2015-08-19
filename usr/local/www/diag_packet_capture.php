@@ -194,13 +194,14 @@ if ($_POST) {
 			$action = gettext("Start");
 
 			//delete previous packet capture if it exists
-			if (file_exists($fp.$fn)) {
+			//unless we're do a streaming capture
+			if (!$_POST['streaming'] && file_exists($fp.$fn)) {
 				unlink ($fp.$fn);
 			}
 
 		} elseif ($_POST['stopbtn'] != "") {
 			$action = gettext("Stop");
-			$processes_running = trim(shell_exec("/bin/ps axw -O pid= | /usr/bin/grep tcpdump | /usr/bin/grep {$fn} | /usr/bin/egrep -v '(pflog|grep)'"));
+			$processes_running = trim(shell_exec("/bin/ps axw -O pid= | /usr/bin/grep tcpdump | /usr/bin/egrep -e {$fn} -e ' -w-( |$)'| /usr/bin/egrep -v '(pflog|grep)'"));
 
 			//explode processes into an array, (delimiter is new line)
 			$processes_running_array = explode("\n", $processes_running);
@@ -380,23 +381,33 @@ include("fbegin.inc");
 <?php
 
 			/* check to see if packet capture tcpdump is already running */
-			$processcheck = (trim(shell_exec("/bin/ps axw -O pid= | /usr/bin/grep tcpdump | /usr/bin/grep {$fn} | /usr/bin/egrep -v '(pflog|grep)'")));
+			$local_processcheck = (trim(shell_exec("/bin/ps axw -O pid= | /usr/bin/grep tcpdump | /usr/bin/egrep -e {$fn} | /usr/bin/egrep -v '(pflog|grep)'")));
+			$streaming_processcheck = (trim(shell_exec("/bin/ps axw -O pid= | /usr/bin/grep tcpdump | /usr/bin/egrep -e ' -w-( |$)' | /usr/bin/egrep -v '(pflog|grep)'")));
 
-			if ($processcheck != "") {
-				$processisrunning = true;
+			if ($local_processcheck != "") {
+				$local_processisrunning = true;
 			} else {
-				$processisrunning = false;
+				$local_processisrunning = false;
 			}
 
-			if (($action == gettext("Stop") or $action == "") and $processisrunning != true) {
+			if ($streaming_processcheck != "") {
+				$streaming_processisrunning = true;
+			} else {
+				$streaming_processisrunning = false;
+			}
+
+			if (($action == gettext("Stop") or $action == "") and ($local_processisrunning != true and $streaming_processisrunning != true)) {
 				echo "<input type=\"submit\" name=\"startbtn\" value=\"" . gettext("Start") . "\" />&nbsp;";
 			} else {
 				echo "<input type=\"submit\" name=\"stopbtn\" value=\"" . gettext("Stop") . "\" />&nbsp;";
 			}
-			if (file_exists($fp.$fn) and $processisrunning != true) {
+			if (file_exists($fp.$fn) and $local_processisrunning != true) {
 				echo "<input type=\"submit\" name=\"viewbtn\" value=\"" . gettext("View Capture") . "\" />&nbsp;";
 				echo "<input type=\"submit\" name=\"downloadbtn\" value=\"" . gettext("Download Capture") . "\" />";
 				echo "<br />" . gettext("The packet capture file was last updated:") . " " . date("F jS, Y g:i:s a.", filemtime($fp.$fn));
+			}
+			if ($streaming_processisrunning) {
+				echo "<br />" . gettext("The streaming capture is currently running and streaming to: TODO");
 			}
 ?>
 			</td>
