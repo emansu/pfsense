@@ -125,6 +125,7 @@ if ($_POST) {
 	$detail = $_POST['detail'];
 	$fam = $_POST['fam'];
 	$proto = $_POST['proto'];
+	$stream_to_hostport = $_POST['stream_to_hostport'];
 
 	if (!array_key_exists($selectedif, $interfaces)) {
 		$input_errors[] = gettext("Invalid interface.");
@@ -166,6 +167,11 @@ if ($_POST) {
 	} else {
 		if (!is_numeric($count) || $count < 0) {
 			$input_errors[] = gettext("Invalid value specified for packet count.");
+		}
+	}
+	if ($stream_to_hostport != "") {
+		if (!is_hostnamewithport($stream_to_hostport)) {
+			$input_errors[] = gettext("Invalid value specified for tcpdump streaming destination.");
 		}
 	}
 
@@ -365,10 +371,8 @@ include("fbegin.inc");
                     echo 'style="display:none"';
                 echo '>';
                 // TODO - need to validate these inputs to prevent shell escape techniques
-                echo '<br />Host';
-                echo '<br /><input name="stream_to_host" class="formfld unknown" id="stream_to_host" size="28" value="' . htmlspecialchars($stream_to_host) . '"/>';
-                echo '<br />Port';
-                echo '<br /><input name="stream_to_port" class="formfld unknown" id="stream_to_port" size="5" value="' . htmlspecialchars($stream_to_port) . '"/>';
+                echo '<br />Host:Port';
+                echo '<br /><input name="stream_to_hostport" class="formfld unknown" id="stream_to_hostport" size="28" value="' . htmlspecialchars($stream_to_hostport) . '"/>';
                 echo '</div>';
 ?>
 
@@ -463,7 +467,14 @@ include("fbegin.inc");
 			if ($action == gettext("Start")) {
 				$matchstr = implode($matches, " and ");
 				echo("<strong>" . gettext("Packet Capture is running.") . "</strong><br />");
-				$cmd = "/usr/sbin/tcpdump -i {$selectedif} {$disablepromiscuous} {$searchcount} -s {$snaplen} -w {$fp}{$fn} " . escapeshellarg($matchstr);
+				if ($stream_to_hostport) {
+					$dash_w = "-w- -U";
+					$pipe   = " | nc " . str_replace(':', ' ', $stream_to_hostport);
+				} else {
+					$dash_w = "-w {$fp}{$fn}";
+					$pipe   = "";
+				}
+				$cmd = "/usr/sbin/tcpdump -i {$selectedif} {$disablepromiscuous} {$searchcount} -s {$snaplen} {$dash_w} " . escapeshellarg($matchstr) . $pipe;
 				// Debug
 				//echo $cmd;
 				mwexec_bg ($cmd);
