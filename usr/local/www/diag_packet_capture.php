@@ -207,10 +207,11 @@ if ($_POST) {
 
 		} elseif ($_POST['stopbtn'] != "") {
 			$action = gettext("Stop");
-			$processes_running = trim(shell_exec("/bin/ps axw -O pid= | /usr/bin/grep tcpdump | /usr/bin/egrep -e {$fn} -e ' -w-( |$)'| /usr/bin/egrep -v '(pflog|grep)'"));
+			$processes_running_fn = trim(shell_exec("/bin/ps axw -O pid= | /usr/bin/grep tcpdump | /usr/bin/grep {$fn} | /usr/bin/egrep -v '(pflog|grep)'"));
+			$processes_running_w = trim(shell_exec("/bin/ps axw -O pid= | /usr/bin/grep tcpdump | /usr/bin/egrep ' -w-( |$)'| /usr/bin/egrep -v '(pflog|grep)'"));
 
 			//explode processes into an array, (delimiter is new line)
-			$processes_running_array = explode("\n", $processes_running);
+			$processes_running_array = array_merge(explode("\n", $processes_running_fn), explode("\n", $processes_running_w));
 
 			//kill each of the packetcapture processes
 			foreach ($processes_running_array as $process) {
@@ -507,7 +508,11 @@ include("fbegin.inc");
 						$detail_args = "-q";
 						break;
 				}
-				system("/usr/sbin/tcpdump {$disabledns} {$detail_args} -r {$fp}{$fn}");
+				if ($processes_running_fn != "") {
+					system("/usr/sbin/tcpdump {$disabledns} {$detail_args} -r {$fp}{$fn}");
+				} else {
+					echo(gettext("Information unavailable for streaming capture."));
+				}
 
 				conf_mount_ro();
 ?>
