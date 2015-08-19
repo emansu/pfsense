@@ -201,7 +201,7 @@ if ($_POST) {
 
 			//delete previous packet capture if it exists
 			//unless we're do a streaming capture
-			if (!$_POST['streaming'] && file_exists($fp.$fn)) {
+			if ($_POST['streaming'] != "" && file_exists($fp.$fn)) {
 				unlink ($fp.$fn);
 			}
 
