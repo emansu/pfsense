@@ -371,7 +371,6 @@ include("fbegin.inc");
                 if (! $_POST['streaming'])
                     echo 'style="display:none"';
                 echo '>';
-                // TODO - need to validate these inputs to prevent shell escape techniques
                 echo '<br />Enter the <strong>host:port</strong> where a Wireshark session is already listening.  The packet capture will terminate immediately if the session is not already listening.';
                 echo '<br />A command something like <em>nc -l -p <strong>port</strong> | wireshark -k -S -i-</em> should be running on <strong>host</strong> before you click <strong>Start</strong>';
                 echo '<br /><input name="stream_to_hostport" class="formfld unknown" id="stream_to_hostport" size="28" value="' . htmlspecialchars($stream_to_hostport) . '"/>';
