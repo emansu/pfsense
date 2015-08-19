@@ -351,6 +351,29 @@ include("fbegin.inc");
 				<br /><b><?=gettext("Note");?>: </b><?=gettext("This option can cause delays for large packet captures.");?>
 			</td>
 		</tr>
+        <tr>
+			<td width="17%" valign="top" class="vncellreq"><?=gettext("Streaming Capture");?></td>
+			<td colspan="2" width="83%" class="vtable">
+				<input id="streaming" type="checkbox" onclick="setvis_streaming_props()" <?php if ($_POST['streaming']) echo " checked=\"checked\""; ?> />
+				<br /><?=gettext("This check box will cause the packet capture to be streamed over a netcat session.  Typically, this would be read by piping the remote side of the connection into a Wireshark instance.");?>
+				<br /><b><?=gettext("Note");?>: </b><?=gettext("This data be should ONLY be streamed over a trusted network.");?>
+
+<?php
+                echo '<div id="streamingpropbox" ';
+                if (! $_POST['streaming'])
+                    echo 'style="display:none"';
+                echo '>';
+                // TODO - need to validate these inputs to prevent shell escape techniques
+                echo '<br />Host';
+                echo '<br /><input name="stream_to_host" class="formfld unknown" id="stream_to_host" size="28" value="' . htmlspecialchars($stream_to_host) . '"/>';
+                echo '<br />Port';
+                echo '<br /><input name="stream_to_port" class="formfld unknown" id="stream_to_port" size="5" value="' . htmlspecialchars($stream_to_port) . '"/>';
+                echo '</div>';
+?>
+
+			</td>
+		</tr>
+
 		<tr>
 			<td width="17%" valign="top">&nbsp;</td>
 			<td colspan="2" width="83%">
@@ -477,6 +500,17 @@ include("fbegin.inc");
 	</table>
 	</td></tr>
 </table>
+
+<script type="text/javascript">
+    function setvis_streaming_props() {
+        thediv = document.getElementById("streamingpropbox");
+        if ( document.getElementById("streaming").checked ) {
+                thediv.style.display = 'block';
+        } else {
+                thediv.style.display = 'none';
+        }
+    }
+</script>
 
 <?php
 include("fend.inc");
