@@ -411,8 +411,12 @@ include("fbegin.inc");
 				echo "<input type=\"submit\" name=\"downloadbtn\" value=\"" . gettext("Download Capture") . "\" />";
 				echo "<br />" . gettext("The packet capture file was last updated:") . " " . date("F jS, Y g:i:s a.", filemtime($fp.$fn));
 			}
-			if ($streaming_processisrunning) {
-				echo "<br />" . gettext("The streaming capture is currently running and streaming to: TODO");
+			if ($local_processisrunning or $streaming_processisrunning) {
+				if ($local_processisrunning) {
+					echo "<br />" . gettext("The currently running capture is being saved locally.");
+				} else {
+					echo "<br />" . gettext("The currently running capture is being streamed to a remote Wireshark.");
+				}
 			}
 ?>
 			</td>
